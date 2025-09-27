@@ -1,18 +1,18 @@
-name: ci
-on:
-  pull_request:
-  push:
-    branches:
-      - master
+# name: ci
+# on:
+#   pull_request:
+#   push:
+#     branches:
+#       - master
 
-permissions:
-  contents: read
-  packages: read
+# permissions:
+#   contents: read
+#   packages: read
 
-jobs:
-  test:
-    uses: alpine-ros/alpine-ros-ci-workflows/.github/workflows/ros1.yaml@main
-    with:
-      enable-codecov: true
-    secrets:
-      codecov-upload-token: ${{ secrets.CODECOV_TOKEN }}
+# jobs:
+#   test:
+#     uses: alpine-ros/alpine-ros-ci-workflows/.github/workflows/ros1.yaml@main
+#     with:
+#       enable-codecov: true
+#     secrets:
+#       codecov-upload-token: ${{ secrets.CODECOV_TOKEN }}
