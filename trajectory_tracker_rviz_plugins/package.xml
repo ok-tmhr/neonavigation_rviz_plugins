@@ -1,14 +1,15 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>trajectory_tracker_rviz_plugins</name>
-  <version>0.17.1</version>
+  <version>0.1.0</version>
   <description>Rviz plugins for trajectory_tracker_msgs</description>
-  <maintainer email="atsushi.w@ieee.org">Atsushi Watanabe</maintainer>
+  <maintainer email="tomohiro.oku2023@gmail.com">Tomohiro Oku</maintainer>
   <license>BSD</license>
   <license>Creative Commons</license>
   <author email="atsushi.w@ieee.org">Atsushi Watanabe</author>
+  <author email="tomohiro.oku2023@gmail.com">Tomohiro Oku</author>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
 
   <build_depend>qtbase5-dev</build_depend>
 
@@ -17,10 +18,11 @@
   <exec_depend>libqt5-widgets</exec_depend>
 
   <depend>pluginlib</depend>
-  <depend version_gte="1.14.21">rviz</depend>
+  <depend>rviz2</depend>
   <depend>trajectory_tracker_msgs</depend>
+  <depend>rviz_common</depend>
 
   <export>
-    <rviz plugin="${prefix}/plugin_description.xml"/>
+    <build_type>ament_cmake</build_type>
   </export>
 </package>

@@ -1,45 +1,32 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.14.4)
 project(trajectory_tracker_rviz_plugins)
 
-set(CATKIN_DEPENDS
+set(COLCON_DEPENDS
   pluginlib
-  rviz
   trajectory_tracker_msgs
+  rviz_common
+  rviz_rendering
 )
 
-find_package(catkin REQUIRED COMPONENTS ${CATKIN_DEPENDS})
-catkin_package(CATKIN_DEPENDS ${CATKIN_DEPENDS})
+find_package(ament_cmake REQUIRED)
+foreach(COLCON_DEPEND ${COLCON_DEPENDS})
+  find_package(${COLCON_DEPEND} REQUIRED)
+endforeach()
 
 
 add_compile_options(-std=c++11)
-include_directories(include ${catkin_INCLUDE_DIRS})
 set(CMAKE_AUTOMOC ON)
 add_definitions(-DQT_NO_KEYWORDS)
 
 
-if(rviz_QT_VERSION VERSION_LESS "5")
-  message(STATUS "Using Qt4 based on the rviz_QT_VERSION: ${rviz_QT_VERSION}")
-  find_package(Qt4 ${rviz_QT_VERSION} EXACT REQUIRED QtCore QtGui)
-  ## pull in all required include dirs, define QT_LIBRARIES, etc.
-  include(${QT_USE_FILE})
-
-  qt4_wrap_cpp(MOC_FILES
-    include/trajectory_tracker_rviz_plugins/path_with_velocity_display.h
-  )
-else()
-  message(STATUS "Using Qt5 based on the rviz_QT_VERSION: ${rviz_QT_VERSION}")
-  find_package(Qt5 ${rviz_QT_VERSION} EXACT REQUIRED Core Widgets)
-  ## make target_link_libraries(${QT_LIBRARIES}) pull in all required dependencies
-  set(QT_LIBRARIES Qt5::Widgets)
+  message(STATUS "Using Qt5 based on the QT_VERSION: ${QT_VERSION}")
 
   qt5_wrap_cpp(MOC_FILES
     include/trajectory_tracker_rviz_plugins/path_with_velocity_display.h
   )
-endif()
 
 find_file(HAVE_VALIDATE_QUATERNION_H
   NAMES rviz/validate_quaternions.h
-  HINTS ${catkin_INCLUDE_DIRS}
 )
 if(HAVE_VALIDATE_QUATERNION_H)
   add_definitions(-DHAVE_VALIDATE_QUATERNION_H)
@@ -50,21 +37,34 @@ add_library(${PROJECT_NAME}
   src/path_with_velocity_display.cpp
   ${MOC_FILES}
 )
-target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES})
+target_include_directories(${PROJECT_NAME} PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+ament_target_dependencies(${PROJECT_NAME} ${COLCON_DEPENDS})
 
 
 install(TARGETS
   ${PROJECT_NAME}
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+install(DIRECTORY include/
+  DESTINATION include
 )
 
 install(FILES
   plugin_description.xml
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  DESTINATION share/${PROJECT_NAME}
 )
 
 install(DIRECTORY icons
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  DESTINATION share/${PROJECT_NAME}
 )
+
+ament_export_include_directories(include)
+ament_export_targets(${PROJECT_NAME})
+pluginlib_export_plugin_description_file(rviz_common plugin_description.xml)
