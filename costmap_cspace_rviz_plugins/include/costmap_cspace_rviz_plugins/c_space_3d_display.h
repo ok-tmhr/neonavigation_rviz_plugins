@@ -51,11 +51,11 @@
 #include <OGRE/OgreSharedPtr.h>
 #endif
 
-#include <costmap_cspace_msgs/CSpace3D.h>
-#include <costmap_cspace_msgs/CSpace3DUpdate.h>
-#include <nav_msgs/MapMetaData.h>
-#include <ros/time.h>
-#include <rviz/display.h>
+#include <costmap_cspace_msgs/msg/c_space3_d.hpp>
+#include <costmap_cspace_msgs/msg/c_space3_d_update.hpp>
+#include <nav_msgs/msg/map_meta_data.hpp>
+#include <rclcpp/time.hpp>
+#include <rviz_common/display.hpp>
 
 namespace Ogre
 {
@@ -104,7 +104,7 @@ protected:
  * \class MapDisplay
  * \brief Displays a map along the XY plane.
  */
-class CSpace3DDisplay : public rviz::Display
+class CSpace3DDisplay : public rviz_common::Display
 {
   friend class Swatch;
   Q_OBJECT
@@ -156,10 +156,10 @@ protected:
   void update(float wall_dt, float ros_dt) override;
 
   /** @brief Copy msg into current_map_ and call showMap(). */
-  void incomingMap(const costmap_cspace_msgs::CSpace3D::ConstPtr& msg);
+  void incomingMap(const costmap_cspace_msgs::msg::CSpace3D::ConstPtr& msg);
 
   /** @brief Copy update's data into current_map_ and call showMap(). */
-  void incomingUpdate(const costmap_cspace_msgs::CSpace3DUpdate::ConstPtr& update);
+  void incomingUpdate(const costmap_cspace_msgs::msg::CSpace3DUpdate::ConstPtr& update);
   void clear();
   void createSwatches();
 
@@ -174,27 +174,27 @@ protected:
   int height_;
   int angle_;
   std::string frame_;
-  costmap_cspace_msgs::CSpace3D current_map_;
-  costmap_cspace_msgs::CSpace3DUpdate current_update_;
+  costmap_cspace_msgs::msg::CSpace3D current_map_;
+  costmap_cspace_msgs::msg::CSpace3DUpdate current_update_;
 
-  ros::Subscriber map_sub_;
-  ros::Subscriber update_sub_;
+  rclcpp::Subscription<costmap_cspace_msgs::msg::CSpace3D> map_sub_;
+  rclcpp::Subscription<costmap_cspace_msgs::msg::CSpace3DUpdate> update_sub_;
 
-  rviz::RosTopicProperty* topic_property_;
-  rviz::RosTopicProperty* topic_update_property_;
-  rviz::FloatProperty* resolution_property_;
-  rviz::FloatProperty* angular_resolution_property_;
-  rviz::IntProperty* width_property_;
-  rviz::IntProperty* height_property_;
-  rviz::VectorProperty* position_property_;
-  rviz::QuaternionProperty* orientation_property_;
-  rviz::FloatProperty* alpha_property_;
-  rviz::Property* draw_under_property_;
-  rviz::EnumProperty* color_scheme_property_;
-  rviz::IntProperty* yaw_property_;
+  rviz_common::properties::RosTopicProperty* topic_property_;
+  rviz_common::properties::RosTopicProperty* topic_update_property_;
+  rviz_common::properties::FloatProperty* resolution_property_;
+  rviz_common::properties::FloatProperty* angular_resolution_property_;
+  rviz_common::properties::IntProperty* width_property_;
+  rviz_common::properties::IntProperty* height_property_;
+  rviz_common::properties::VectorProperty* position_property_;
+  rviz_common::properties::QuaternionProperty* orientation_property_;
+  rviz_common::properties::FloatProperty* alpha_property_;
+  rviz_common::properties::Property* draw_under_property_;
+  rviz_common::properties::EnumProperty* color_scheme_property_;
+  rviz_common::properties::IntProperty* yaw_property_;
 
-  rviz::BoolProperty* unreliable_property_;
-  rviz::BoolProperty* transform_timestamp_property_;
+  rviz_common::properties::BoolProperty* unreliable_property_;
+  rviz_common::properties::BoolProperty* transform_timestamp_property_;
 };
 
 }  // namespace costmap_cspace_rviz_plugins

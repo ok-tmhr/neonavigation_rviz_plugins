@@ -32,20 +32,20 @@
 
 #include <vector>
 
-#include <rviz/validate_floats.h>
+#include <rviz_common/validate_floats.hpp>
 #ifdef HAVE_VALIDATE_QUATERNION_H
-#include <rviz/validate_quaternions.h>
+#include <rviz_common/validate_quaternions.h>
 #endif
 
-#include <trajectory_tracker_msgs/PathWithVelocity.h>
-#include <trajectory_tracker_msgs/PoseStampedWithVelocity.h>
+#include <trajectory_tracker_msgs/msg/path_with_velocity.hpp>
+#include <trajectory_tracker_msgs/msg/pose_stamped_with_velocity.hpp>
 
 namespace trajectory_tracker_rviz_plugins
 {
-inline bool validateFloats(const trajectory_tracker_msgs::PoseStampedWithVelocity& msg)
+inline bool validateFloats(const trajectory_tracker_msgs::msg::PoseStampedWithVelocity& msg)
 {
-  return rviz::validateFloats(msg.pose.position) &&
-         rviz::validateFloats(msg.pose.orientation);
+  return rviz_common::validateFloats(msg.pose.position) &&
+         rviz_common::validateFloats(msg.pose.orientation);
   // NaN value in linear_velocity means "Don't Care"; don't validate linear_velocity field
 }
 
@@ -60,13 +60,13 @@ inline bool validateFloats(const std::vector<T>& vec)
   return true;
 }
 
-inline bool validateFloats(const trajectory_tracker_msgs::PathWithVelocity& msg)
+inline bool validateFloats(const trajectory_tracker_msgs::msg::PathWithVelocity& msg)
 {
   return validateFloats(msg.poses);
 }
 
 #ifdef HAVE_VALIDATE_QUATERNION_H
-inline bool validateQuaternions(const trajectory_tracker_msgs::PoseStampedWithVelocity& msg)
+inline bool validateQuaternions(const trajectory_tracker_msgs::msg::PoseStampedWithVelocity& msg)
 {
   return rviz::validateQuaternions(msg.pose.orientation);
 }

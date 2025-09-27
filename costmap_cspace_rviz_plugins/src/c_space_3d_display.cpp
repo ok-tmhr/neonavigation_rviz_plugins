@@ -41,22 +41,23 @@
 #include <OGRE/OgreTechnique.h>
 #include <OGRE/OgreSharedPtr.h>
 
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
 #include <costmap_cspace_rviz_plugins/c_space_3d_display.h>
-#include <rviz/frame_manager.h>
-#include <rviz/ogre_helpers/custom_parameter_indices.h>
-#include <rviz/ogre_helpers/grid.h>
-#include <rviz/properties/enum_property.h>
-#include <rviz/properties/float_property.h>
-#include <rviz/properties/int_property.h>
-#include <rviz/properties/property.h>
-#include <rviz/properties/quaternion_property.h>
-#include <rviz/properties/ros_topic_property.h>
-#include <rviz/properties/vector_property.h>
-#include <rviz/validate_floats.h>
-#include <rviz/validate_quaternions.h>
-#include <rviz/display_context.h>
+#include <rviz_common/frame_manager_iface.hpp>
+#include <rviz_common/logging.hpp>
+#include <rviz_rendering/custom_parameter_indices.hpp>
+#include <rviz_rendering/objects/grid.hpp>
+#include <rviz_common/properties/enum_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/properties/int_property.hpp>
+#include <rviz_common/properties/property.hpp>
+#include <rviz_common/properties/quaternion_property.hpp>
+#include <rviz_common/properties/ros_topic_property.hpp>
+#include <rviz_common/properties/vector_property.hpp>
+#include <rviz_common/validate_floats.hpp>
+// #include <rviz_common/validate_quaternions.hpp>
+#include <rviz_common/display_context.hpp>
 
 namespace costmap_cspace_rviz_plugins
 {
@@ -239,33 +240,33 @@ void Swatch::updateData(const int yaw)
 }
 
 CSpace3DDisplay::CSpace3DDisplay()
-  : rviz::Display()
+  : rviz_common::Display()
   , loaded_(false)
   , resolution_(0.0f)
   , width_(0)
   , height_(0)
 {
   connect(this, SIGNAL(mapUpdated()), this, SLOT(showMap()));
-  topic_property_ = new rviz::RosTopicProperty(
-      "Topic", "", QString::fromStdString(ros::message_traits::datatype<costmap_cspace_msgs::CSpace3D>()),
-      "costmap_cspace_msgs::CSpace3D topic to subscribe to.", this, SLOT(updateTopic()));
+  topic_property_ = new rviz_common::properties::RosTopicProperty(
+      "Topic", "", QString::fromStdString(ros::message_traits::datatype<costmap_cspace_msgs::msg::CSpace3D>()),
+      "costmap_cspace_msgs::msg::CSpace3D topic to subscribe to.", this, SLOT(updateTopic()));
 
-  topic_update_property_ = new rviz::RosTopicProperty(
-      "Update Topic", "", QString::fromStdString(ros::message_traits::datatype<costmap_cspace_msgs::CSpace3DUpdate>()),
-      "costmap_cspace_msgs::CSpace3D topic to subscribe to.", this, SLOT(updateTopic()));
+  topic_update_property_ = new rviz_common::properties::RosTopicProperty(
+      "Update Topic", "", QString::fromStdString(ros::message_traits::datatype<costmap_cspace_msgs::msg::CSpace3DUpdate>()),
+      "costmap_cspace_msgs::msg::CSpace3D topic to subscribe to.", this, SLOT(updateTopic()));
 
   alpha_property_ =
-      new rviz::FloatProperty("Alpha", 0.7, "Amount of transparency to apply to the map.", this, SLOT(updateAlpha()));
+      new rviz_common::properties::FloatProperty("Alpha", 0.7, "Amount of transparency to apply to the map.", this, SLOT(updateAlpha()));
   alpha_property_->setMin(0);
   alpha_property_->setMax(1);
 
-  color_scheme_property_ = new rviz::EnumProperty("Color Scheme", "costmap", "How to color the occupancy values.", this,
+  color_scheme_property_ = new rviz_common::properties::EnumProperty("Color Scheme", "costmap", "How to color the occupancy values.", this,
                                                   SLOT(updatePalette()));
   // Option values here must correspond to indices in palette_textures_ array in onInitialize() below.
   color_scheme_property_->addOption("costmap", 0);
   color_scheme_property_->addOption("raw", 1);
 
-  yaw_property_ = new rviz::IntProperty("Yaw", 0, "Yaw number of drawn map.", this, SLOT(updateYaw()));
+  yaw_property_ = new rviz_common::properties::IntProperty("Yaw", 0, "Yaw number of drawn map.", this, SLOT(updateYaw()));
   yaw_property_->setMin(0);
 
   draw_under_property_ = new Property("Draw Behind", false,
@@ -273,25 +274,25 @@ CSpace3DDisplay::CSpace3DDisplay()
                                       "everything else.",
                                       this, SLOT(updateDrawUnder()));
 
-  resolution_property_ = new rviz::FloatProperty("Resolution", 0, "Resolution of the map. (not editable)", this);
+  resolution_property_ = new rviz_common::properties::FloatProperty("Resolution", 0, "Resolution of the map. (not editable)", this);
   resolution_property_->setReadOnly(true);
 
   angular_resolution_property_ =
-      new rviz::FloatProperty("Angle Resolution", 0, "Angle resolution of the map. (not editable)", this);
+      new rviz_common::properties::FloatProperty("Angle Resolution", 0, "Angle resolution of the map. (not editable)", this);
   angular_resolution_property_->setReadOnly(true);
 
-  width_property_ = new rviz::IntProperty("Width", 0, "Width of the map, in meters. (not editable)", this);
+  width_property_ = new rviz_common::properties::IntProperty("Width", 0, "Width of the map, in meters. (not editable)", this);
   width_property_->setReadOnly(true);
 
-  height_property_ = new rviz::IntProperty("Height", 0, "Height of the map, in meters. (not editable)", this);
+  height_property_ = new rviz_common::properties::IntProperty("Height", 0, "Height of the map, in meters. (not editable)", this);
   height_property_->setReadOnly(true);
 
   position_property_ =
-      new rviz::VectorProperty("Position", Ogre::Vector3::ZERO,
+      new rviz_common::properties::VectorProperty("Position", Ogre::Vector3::ZERO,
                                "Position of the bottom left corner of the map, in meters. (not editable)", this);
   position_property_->setReadOnly(true);
 
-  orientation_property_ = new rviz::QuaternionProperty("Orientation", Ogre::Quaternion::IDENTITY,
+  orientation_property_ = new rviz_common::properties::QuaternionProperty("Orientation", Ogre::Quaternion::IDENTITY,
                                                        "Orientation of the map. (not editable)", this);
   orientation_property_->setReadOnly(true);
 
@@ -418,8 +419,8 @@ void CSpace3DDisplay::subscribe()
     return;
   }
 
-  current_map_ = costmap_cspace_msgs::CSpace3D();
-  current_update_ = costmap_cspace_msgs::CSpace3DUpdate();
+  current_map_ = costmap_cspace_msgs::msg::CSpace3D();
+  current_update_ = costmap_cspace_msgs::msg::CSpace3DUpdate();
 
   if (!topic_property_->getTopic().isEmpty())
   {
@@ -435,11 +436,11 @@ void CSpace3DDisplay::subscribe()
         map_sub_ = update_nh_.subscribe(topic_property_->getTopicStd(), 1, &CSpace3DDisplay::incomingMap, this,
                                         ros::TransportHints().reliable());
       }
-      setStatus(rviz::StatusProperty::Ok, "Topic", "OK");
+      setStatus(rviz_common::properties::StatusProperty::Ok, "Topic", "OK");
     }
-    catch (ros::Exception& e)
+    catch (rclcpp::Exception& e)
     {
-      setStatus(rviz::StatusProperty::Error, "Topic", QString("Error subscribing: ") + e.what());
+      setStatus(rviz_common::properties::StatusProperty::Error, "Topic", QString("Error subscribing: ") + e.what());
     }
 
     if (!topic_update_property_->getTopic().isEmpty())
@@ -448,16 +449,16 @@ void CSpace3DDisplay::subscribe()
       {
         update_sub_ =
             update_nh_.subscribe(topic_update_property_->getTopicStd(), 1, &CSpace3DDisplay::incomingUpdate, this);
-        setStatus(rviz::StatusProperty::Ok, "Update Topic", "OK");
+        setStatus(rviz_common::properties::StatusProperty::Ok, "Update Topic", "OK");
       }
-      catch (ros::Exception& e)
+      catch (rclcpp::Exception& e)
       {
-        setStatus(rviz::StatusProperty::Error, "Update Topic", QString("Error subscribing: ") + e.what());
+        setStatus(rviz_common::properties::StatusProperty::Error, "Update Topic", QString("Error subscribing: ") + e.what());
       }
     }
     else
     {
-      setStatus(rviz::StatusProperty::Ok, "Update Topic", QString("Not specified"));
+      setStatus(rviz_common::properties::StatusProperty::Ok, "Update Topic", QString("Not specified"));
     }
   }
 }
@@ -530,7 +531,7 @@ void CSpace3DDisplay::updateTopic()
 
 void CSpace3DDisplay::clear()
 {
-  setStatus(rviz::StatusProperty::Warn, "Message", "No map received");
+  setStatus(rviz_common::properties::StatusProperty::Warn, "Message", "No map received");
 
   if (!loaded_)
   {
@@ -552,15 +553,15 @@ void CSpace3DDisplay::clear()
   loaded_ = false;
 }
 
-bool validateFloats(const costmap_cspace_msgs::CSpace3D& msg)
+bool validateFloats(const costmap_cspace_msgs::msg::CSpace3D& msg)
 {
   bool valid = true;
-  valid = valid && rviz::validateFloats(msg.info.linear_resolution);
-  valid = valid && rviz::validateFloats(msg.info.origin);
+  valid = valid && rviz_common::validateFloats(msg.info.linear_resolution);
+  valid = valid && rviz_common::validateFloats(msg.info.origin);
   return valid;
 }
 
-void CSpace3DDisplay::incomingMap(const costmap_cspace_msgs::CSpace3D::ConstPtr& msg)
+void CSpace3DDisplay::incomingMap(const costmap_cspace_msgs::msg::CSpace3D::ConstPtr& msg)
 {
   current_map_ = *msg;
   // updated via signal in case ros spinner is in a different thread
@@ -568,7 +569,7 @@ void CSpace3DDisplay::incomingMap(const costmap_cspace_msgs::CSpace3D::ConstPtr&
   loaded_ = true;
 }
 
-void CSpace3DDisplay::incomingUpdate(const costmap_cspace_msgs::CSpace3DUpdate::ConstPtr& update)
+void CSpace3DDisplay::incomingUpdate(const costmap_cspace_msgs::msg::CSpace3DUpdate::ConstPtr& update)
 {
   // Only update the map if we have gotten a full one first.
   if (!loaded_)
@@ -580,7 +581,7 @@ void CSpace3DDisplay::incomingUpdate(const costmap_cspace_msgs::CSpace3DUpdate::
   if (update->x < 0 || update->y < 0 || current_map_.info.width < update->x + update->width ||
       current_map_.info.height < update->y + update->height)
   {
-    setStatus(rviz::StatusProperty::Error, "Update", "Update area outside of original map area.");
+    setStatus(rviz_common::properties::StatusProperty::Error, "Update", "Update area outside of original map area.");
     return;
   }
 
@@ -601,7 +602,7 @@ void CSpace3DDisplay::createSwatches()
 
   for (int i = 0; i < 4; i++)
   {
-    ROS_INFO("Creating %d swatches", n_swatches);
+    RVIZ_COMMON_LOG_INFO_STREAM("Creating" << n_swatches << "swatches");
     for (unsigned i = 0; i < swatches_.size(); i++)
     {
       delete swatches_[i];
@@ -639,7 +640,7 @@ void CSpace3DDisplay::createSwatches()
     }
     catch (Ogre::RenderingAPIException&)
     {
-      ROS_WARN("Failed to create %d swatches", n_swatches);
+      RVIZ_COMMON_LOG_WARNING_STREAM("Failed to create " << n_swatches << "swatches");
       if (sw > sh)
         sw /= 2;
       else
@@ -659,33 +660,32 @@ void CSpace3DDisplay::showMap()
 
   if (!validateFloats(current_map_))
   {
-    setStatus(rviz::StatusProperty::Error, "Map", "Message contained invalid floating point values (nans or infs)");
+    setStatus(rviz_common::properties::StatusProperty::Error, "Map", "Message contained invalid floating point values (nans or infs)");
     return;
   }
 
-  if (!rviz::validateQuaternions(current_map_.info.origin))
-  {
-    ROS_WARN_ONCE_NAMED("quaternions",
-                        "Map received on topic '%s' contains unnormalized quaternions. "
-                        "This warning will only be output once but may be true for others; "
-                        "enable DEBUG messages for ros.rviz.quaternions to see more details.",
-                        topic_property_->getTopicStd().c_str());
-    ROS_DEBUG_NAMED("quaternions", "Map received on topic '%s' contains unnormalized quaternions.",
-                    topic_property_->getTopicStd().c_str());
-  }
+  // if (!rviz_common::properties::validateQuaternions(current_map_.info.origin))
+  // {
+  //   RVIZ_COMMON_LOG_WARNING_ONCE_NAMED("quaternions",
+  //                       "Map received on topic '%s' contains unnormalized quaternions. "
+  //                       "This warning will only be output once but may be true for others; "
+  //                       "enable DEBUG messages for ros.rviz.quaternions to see more details.",
+  //                       topic_property_->getTopicStd().c_str());
+  //   RVIZ_COMMON_LOG_DEBUG_NAMED("quaternions", "Map received on topic '%s' contains unnormalized quaternions.",
+  //                   topic_property_->getTopicStd().c_str());
+  // }
 
   if (current_map_.info.width * current_map_.info.height == 0)
   {
     std::stringstream ss;
     ss << "Map is zero-sized (" << current_map_.info.width << "x" << current_map_.info.height << ")";
-    setStatus(rviz::StatusProperty::Error, "Map", QString::fromStdString(ss.str()));
+    setStatus(rviz_common::properties::StatusProperty::Error, "Map", QString::fromStdString(ss.str()));
     return;
   }
 
-  setStatus(rviz::StatusProperty::Ok, "Message", "Map received");
+  setStatus(rviz_common::properties::StatusProperty::Ok, "Message", "Map received");
 
-  ROS_DEBUG("Received a %d X %d map @ %.3f m/pix\n", current_map_.info.width, current_map_.info.height,
-            current_map_.info.linear_resolution);
+  RVIZ_COMMON_LOG_DEBUG_STREAM("Received a " << current_map_.info.width << " X " << current_map_.info.height << " map @ " << current_map_.info.linear_resolution << " m/pix\n");
 
   const float resolution = current_map_.info.linear_resolution;
   const float anglular_resolution = current_map_.info.angular_resolution;
@@ -705,7 +705,7 @@ void CSpace3DDisplay::showMap()
   Ogre::Vector3 position(current_map_.info.origin.position.x, current_map_.info.origin.position.y,
                          current_map_.info.origin.position.z);
   Ogre::Quaternion orientation;
-  rviz::normalizeQuaternion(current_map_.info.origin.orientation, orientation);
+  // rviz_common::properties::normalizeQuaternion(current_map_.info.origin.orientation, orientation);
 
   frame_ = current_map_.header.frame_id;
   if (frame_.empty())
@@ -719,7 +719,7 @@ void CSpace3DDisplay::showMap()
     std::stringstream ss;
     ss << "Data size doesn't match width*height: width = " << width << ", height = " << height
        << ", data size = " << current_map_.data.size();
-    setStatus(rviz::StatusProperty::Error, "Map", QString::fromStdString(ss.str()));
+    setStatus(rviz_common::properties::StatusProperty::Error, "Map", QString::fromStdString(ss.str()));
     map_status_set = true;
   }
 
@@ -746,7 +746,7 @@ void CSpace3DDisplay::showMap()
 
   if (!map_status_set)
   {
-    setStatus(rviz::StatusProperty::Ok, "Map", "Map OK");
+    setStatus(rviz_common::properties::StatusProperty::Ok, "Map", "Map OK");
   }
   updatePalette();
 
@@ -792,7 +792,7 @@ void CSpace3DDisplay::transformMap()
     return;
   }
 
-  ros::Time transform_time;
+  rclcpp::Time transform_time;
 
   if (transform_timestamp_property_->getBool())
   {
@@ -803,17 +803,16 @@ void CSpace3DDisplay::transformMap()
   Ogre::Quaternion orientation;
   if (!context_->getFrameManager()->transform(frame_, transform_time, current_map_.info.origin, position,
                                               orientation) &&
-      !context_->getFrameManager()->transform(frame_, ros::Time(0), current_map_.info.origin, position, orientation))
+      !context_->getFrameManager()->transform(frame_, rclcpp::Time(0), current_map_.info.origin, position, orientation))
   {
-    ROS_DEBUG("Error transforming map '%s' from frame '%s' to frame '%s'", qPrintable(getName()), frame_.c_str(),
-              qPrintable(fixed_frame_));
+    RVIZ_COMMON_LOG_DEBUG_STREAM("Error transforming map '" << qPrintable(getName()) << "' from frame '" + frame_ + "' to frame '" + qPrintable(fixed_frame_) + "'");
 
-    setStatus(rviz::StatusProperty::Error, "Transform",
+    setStatus(rviz_common::properties::StatusProperty::Error, "Transform",
               "No transform from [" + QString::fromStdString(frame_) + "] to [" + fixed_frame_ + "]");
   }
   else
   {
-    setStatus(rviz::StatusProperty::Ok, "Transform", "Transform OK");
+    setStatus(rviz_common::properties::StatusProperty::Ok, "Transform", "Transform OK");
   }
 
   scene_node_->setPosition(position);
@@ -847,4 +846,4 @@ void CSpace3DDisplay::update(float /*wall_dt*/, float /*ros_dt*/)
 }  // namespace costmap_cspace_rviz_plugins
 
 #include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS(costmap_cspace_rviz_plugins::CSpace3DDisplay, rviz::Display)
+PLUGINLIB_EXPORT_CLASS(costmap_cspace_rviz_plugins::CSpace3DDisplay, rviz_common::Display)

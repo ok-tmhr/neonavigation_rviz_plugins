@@ -32,20 +32,20 @@
 
 #include <vector>
 
-#include <rviz/message_filter_display.h>
-#include <rviz/ogre_helpers/arrow.h>
-#include <rviz/ogre_helpers/axes.h>
-#include <rviz/ogre_helpers/billboard_line.h>
+#include <rviz_common/ros_topic_display.hpp>
+#include <rviz_rendering/objects/arrow.hpp>
+#include <rviz_rendering/objects/axes.hpp>
+#include <rviz_rendering/objects/billboard_line.hpp>
 
-#include <trajectory_tracker_msgs/PathWithVelocity.h>
-#include <trajectory_tracker_msgs/PoseStampedWithVelocity.h>
+#include <trajectory_tracker_msgs/msg/path_with_velocity.hpp>
+#include <trajectory_tracker_msgs/msg/pose_stamped_with_velocity.hpp>
 
 namespace Ogre
 {
 class ManualObject;
 }  // namespace Ogre
 
-namespace rviz
+namespace rviz_common
 {
 class ColorProperty;
 class FloatProperty;
@@ -59,9 +59,9 @@ namespace trajectory_tracker_rviz_plugins
 {
 /**
  * \class PathWithVelocityDisplay
- * \brief Displays a trajectory_tracker_msgs::PathWithVelocity message
+ * \brief Displays a trajectory_tracker_msgs::msg::PathWithVelocity message
  */
-class PathWithVelocityDisplay : public rviz::MessageFilterDisplay<trajectory_tracker_msgs::PathWithVelocity>
+class PathWithVelocityDisplay : public rviz_common::RosTopicDisplay<trajectory_tracker_msgs::msg::PathWithVelocity>
 {
   Q_OBJECT
 public:
@@ -76,7 +76,7 @@ protected:
   virtual void onInitialize();
 
   /** @brief Overridden from MessageFilterDisplay. */
-  void processMessage(const trajectory_tracker_msgs::PathWithVelocity::ConstPtr& msg);
+  void processMessage(const trajectory_tracker_msgs::msg::PathWithVelocity::ConstPtr& msg);
 
 private Q_SLOTS:
   void updateBufferLength();
@@ -90,25 +90,25 @@ private Q_SLOTS:
 
 private:
   void destroyObjects();
-  void allocateArrowVector(std::vector<rviz::Arrow*>& arrow_vect, size_t num);
-  void allocateAxesVector(std::vector<rviz::Axes*>& axes_vect, size_t num);
+  void allocateArrowVector(std::vector<rviz_rendering::Arrow*>& arrow_vect, size_t num);
+  void allocateAxesVector(std::vector<rviz_rendering::Axes*>& axes_vect, size_t num);
   void destroyPoseAxesChain();
   void destroyPoseArrowChain();
 
-  typedef std::vector<rviz::Axes*> AxesPtrArray;
-  typedef std::vector<rviz::Arrow*> ArrowPtrArray;
+  typedef std::vector<rviz_rendering::Axes*> AxesPtrArray;
+  typedef std::vector<rviz_rendering::Arrow*> ArrowPtrArray;
 
   std::vector<Ogre::ManualObject*> manual_objects_;
-  std::vector<rviz::BillboardLine*> billboard_lines_;
+  std::vector<rviz_rendering::BillboardLine*> billboard_lines_;
   std::vector<AxesPtrArray> axes_chain_;
   std::vector<ArrowPtrArray> arrow_chain_;
 
-  rviz::EnumProperty* style_property_;
-  rviz::ColorProperty* color_property_;
-  rviz::FloatProperty* alpha_property_;
-  rviz::FloatProperty* line_width_property_;
-  rviz::IntProperty* buffer_length_property_;
-  rviz::VectorProperty* offset_property_;
+  rviz_common::properties::EnumProperty* style_property_;
+  rviz_common::properties::ColorProperty* color_property_;
+  rviz_common::properties::FloatProperty* alpha_property_;
+  rviz_common::properties::FloatProperty* line_width_property_;
+  rviz_common::properties::IntProperty* buffer_length_property_;
+  rviz_common::properties::VectorProperty* offset_property_;
 
   enum LineStyle
   {
@@ -117,14 +117,14 @@ private:
   };
 
   // pose marker property
-  rviz::EnumProperty* pose_style_property_;
-  rviz::FloatProperty* pose_axes_length_property_;
-  rviz::FloatProperty* pose_axes_radius_property_;
-  rviz::ColorProperty* pose_arrow_color_property_;
-  rviz::FloatProperty* pose_arrow_shaft_length_property_;
-  rviz::FloatProperty* pose_arrow_head_length_property_;
-  rviz::FloatProperty* pose_arrow_shaft_diameter_property_;
-  rviz::FloatProperty* pose_arrow_head_diameter_property_;
+  rviz_common::properties::EnumProperty* pose_style_property_;
+  rviz_common::properties::FloatProperty* pose_axes_length_property_;
+  rviz_common::properties::FloatProperty* pose_axes_radius_property_;
+  rviz_common::properties::ColorProperty* pose_arrow_color_property_;
+  rviz_common::properties::FloatProperty* pose_arrow_shaft_length_property_;
+  rviz_common::properties::FloatProperty* pose_arrow_head_length_property_;
+  rviz_common::properties::FloatProperty* pose_arrow_shaft_diameter_property_;
+  rviz_common::properties::FloatProperty* pose_arrow_head_diameter_property_;
 
   enum PoseStyle
   {
