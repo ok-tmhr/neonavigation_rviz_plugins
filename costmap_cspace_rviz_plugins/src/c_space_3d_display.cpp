@@ -72,7 +72,7 @@ public:
 
   void visit(Ogre::Renderable* rend, ushort /*lodIndex*/, bool /*isDebug*/, Ogre::Any* /*pAny*/ = nullptr) override
   {
-    rend->setCustomParameter(ALPHA_PARAMETER, alpha_vec_);
+    rend->setCustomParameter(RVIZ_RENDERING_ALPHA_PARAMETER, alpha_vec_);
   }
 
 private:
@@ -248,11 +248,11 @@ CSpace3DDisplay::CSpace3DDisplay()
 {
   connect(this, SIGNAL(mapUpdated()), this, SLOT(showMap()));
   topic_property_ = new rviz_common::properties::RosTopicProperty(
-      "Topic", "", QString::fromStdString(ros::message_traits::datatype<costmap_cspace_msgs::msg::CSpace3D>()),
+      "Topic", "", QString::fromStdString(rosidl_generator_traits::data_type<costmap_cspace_msgs::msg::CSpace3D>()),
       "costmap_cspace_msgs::msg::CSpace3D topic to subscribe to.", this, SLOT(updateTopic()));
 
   topic_update_property_ = new rviz_common::properties::RosTopicProperty(
-      "Update Topic", "", QString::fromStdString(ros::message_traits::datatype<costmap_cspace_msgs::msg::CSpace3DUpdate>()),
+      "Update Topic", "", QString::fromStdString(rosidl_generator_traits::data_type<costmap_cspace_msgs::msg::CSpace3DUpdate>()),
       "costmap_cspace_msgs::msg::CSpace3D topic to subscribe to.", this, SLOT(updateTopic()));
 
   alpha_property_ =
@@ -394,6 +394,7 @@ Ogre::TexturePtr makePaletteTexture(unsigned char* palette_bytes)
 
 void CSpace3DDisplay::onInitialize()
 {
+  rviz_ros_node_ = context_->getRosNodeAbstraction();
   // Order of palette textures here must match option indices for color_scheme_property_ above.
   palette_textures_.push_back(makePaletteTexture(makeCostmapPalette()));
   color_scheme_transparency_.push_back(true);
@@ -426,19 +427,19 @@ void CSpace3DDisplay::subscribe()
   {
     try
     {
+      auto update_nh_ = rviz_ros_node_.lock()->get_raw_node();
+      using std::placeholders::_1;
       if (unreliable_property_->getBool())
       {
-        map_sub_ = update_nh_.subscribe(topic_property_->getTopicStd(), 1, &CSpace3DDisplay::incomingMap, this,
-                                        ros::TransportHints().unreliable());
+        map_sub_ = update_nh_->create_subscription<costmap_cspace_msgs::msg::CSpace3D>(topic_property_->getTopicStd(), rclcpp::QoS(1).best_effort().transient_local(), std::bind(&CSpace3DDisplay::incomingMap, this, _1));
       }
       else
       {
-        map_sub_ = update_nh_.subscribe(topic_property_->getTopicStd(), 1, &CSpace3DDisplay::incomingMap, this,
-                                        ros::TransportHints().reliable());
+        map_sub_ = update_nh_->create_subscription<costmap_cspace_msgs::msg::CSpace3D>(topic_property_->getTopicStd(), rclcpp::QoS(1).reliable().transient_local(), std::bind(&CSpace3DDisplay::incomingMap, this, _1));
       }
       setStatus(rviz_common::properties::StatusProperty::Ok, "Topic", "OK");
     }
-    catch (rclcpp::Exception& e)
+    catch (rclcpp::exceptions::InvalidTopicNameError& e)
     {
       setStatus(rviz_common::properties::StatusProperty::Error, "Topic", QString("Error subscribing: ") + e.what());
     }
@@ -447,11 +448,13 @@ void CSpace3DDisplay::subscribe()
     {
       try
       {
+        auto update_nh_ = rviz_ros_node_.lock()->get_raw_node();
+        using std::placeholders::_1;
         update_sub_ =
-            update_nh_.subscribe(topic_update_property_->getTopicStd(), 1, &CSpace3DDisplay::incomingUpdate, this);
+            update_nh_->create_subscription<costmap_cspace_msgs::msg::CSpace3DUpdate>(topic_update_property_->getTopicStd(), 1, std::bind(&CSpace3DDisplay::incomingUpdate, this, _1));
         setStatus(rviz_common::properties::StatusProperty::Ok, "Update Topic", "OK");
       }
-      catch (rclcpp::Exception& e)
+      catch (rclcpp::exceptions::InvalidTopicNameError& e)
       {
         setStatus(rviz_common::properties::StatusProperty::Error, "Update Topic", QString("Error subscribing: ") + e.what());
       }
@@ -465,8 +468,8 @@ void CSpace3DDisplay::subscribe()
 
 void CSpace3DDisplay::unsubscribe()
 {
-  map_sub_.shutdown();
-  update_sub_.shutdown();
+  map_sub_.reset();
+  update_sub_.reset();
 }
 
 void CSpace3DDisplay::updateAlpha()

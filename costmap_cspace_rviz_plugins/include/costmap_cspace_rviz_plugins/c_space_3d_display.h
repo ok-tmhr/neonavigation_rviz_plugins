@@ -56,13 +56,14 @@
 #include <nav_msgs/msg/map_meta_data.hpp>
 #include <rclcpp/time.hpp>
 #include <rviz_common/display.hpp>
+#include <rviz_common/ros_integration/ros_node_abstraction_iface.hpp>
 
 namespace Ogre
 {
 class ManualObject;
 }  // namespace Ogre
 
-namespace rviz
+namespace rviz_common::properties
 {
 class EnumProperty;
 class FloatProperty;
@@ -177,8 +178,9 @@ protected:
   costmap_cspace_msgs::msg::CSpace3D current_map_;
   costmap_cspace_msgs::msg::CSpace3DUpdate current_update_;
 
-  rclcpp::Subscription<costmap_cspace_msgs::msg::CSpace3D> map_sub_;
-  rclcpp::Subscription<costmap_cspace_msgs::msg::CSpace3DUpdate> update_sub_;
+  rviz_common::ros_integration::RosNodeAbstractionIface::WeakPtr rviz_ros_node_;
+  rclcpp::Subscription<costmap_cspace_msgs::msg::CSpace3D>::SharedPtr map_sub_;
+  rclcpp::Subscription<costmap_cspace_msgs::msg::CSpace3DUpdate>::SharedPtr update_sub_;
 
   rviz_common::properties::RosTopicProperty* topic_property_;
   rviz_common::properties::RosTopicProperty* topic_update_property_;
