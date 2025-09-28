@@ -8,13 +8,13 @@ set(COLCON_DEPENDS
   rviz_rendering
 )
 
-find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_ros REQUIRED)
 foreach(COLCON_DEPEND ${COLCON_DEPENDS})
   find_package(${COLCON_DEPEND} REQUIRED)
 endforeach()
 
 
-add_compile_options(-std=c++11)
+add_compile_options(-std=c++17)
 set(CMAKE_AUTOMOC ON)
 add_definitions(-DQT_NO_KEYWORDS)
 
@@ -47,6 +47,7 @@ ament_target_dependencies(${PROJECT_NAME} ${COLCON_DEPENDS})
 
 install(TARGETS
   ${PROJECT_NAME}
+  EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
@@ -66,5 +67,6 @@ install(DIRECTORY icons
 )
 
 ament_export_include_directories(include)
-ament_export_targets(${PROJECT_NAME})
+ament_export_targets(export_${PROJECT_NAME})
 pluginlib_export_plugin_description_file(rviz_common plugin_description.xml)
+ament_package()

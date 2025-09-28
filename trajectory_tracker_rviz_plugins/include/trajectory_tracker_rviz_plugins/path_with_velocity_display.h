@@ -32,7 +32,7 @@
 
 #include <vector>
 
-#include <rviz_common/ros_topic_display.hpp>
+#include <rviz_common/message_filter_display.hpp>
 #include <rviz_rendering/objects/arrow.hpp>
 #include <rviz_rendering/objects/axes.hpp>
 #include <rviz_rendering/objects/billboard_line.hpp>
@@ -45,7 +45,7 @@ namespace Ogre
 class ManualObject;
 }  // namespace Ogre
 
-namespace rviz_common
+namespace rviz_common::properties
 {
 class ColorProperty;
 class FloatProperty;
@@ -61,7 +61,7 @@ namespace trajectory_tracker_rviz_plugins
  * \class PathWithVelocityDisplay
  * \brief Displays a trajectory_tracker_msgs::msg::PathWithVelocity message
  */
-class PathWithVelocityDisplay : public rviz_common::RosTopicDisplay<trajectory_tracker_msgs::msg::PathWithVelocity>
+class PathWithVelocityDisplay : public rviz_common::MessageFilterDisplay<trajectory_tracker_msgs::msg::PathWithVelocity>
 {
   Q_OBJECT
 public:
@@ -76,7 +76,7 @@ protected:
   virtual void onInitialize();
 
   /** @brief Overridden from MessageFilterDisplay. */
-  void processMessage(const trajectory_tracker_msgs::msg::PathWithVelocity::ConstPtr& msg);
+  void processMessage(const trajectory_tracker_msgs::msg::PathWithVelocity::ConstPtr msg);
 
 private Q_SLOTS:
   void updateBufferLength();

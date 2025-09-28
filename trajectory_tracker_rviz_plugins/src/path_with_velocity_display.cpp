@@ -154,13 +154,13 @@ PathWithVelocityDisplay::~PathWithVelocityDisplay()
 
 void PathWithVelocityDisplay::onInitialize()
 {
-  RosTopicDisplay::onInitialize();
+  MFDClass::onInitialize();
   updateBufferLength();
 }
 
 void PathWithVelocityDisplay::reset()
 {
-  RosTopicDisplay::reset();
+  MFDClass::reset();
   updateBufferLength();
 }
 
@@ -413,7 +413,7 @@ void PathWithVelocityDisplay::updateBufferLength()
   arrow_chain_.resize(buffer_length);
 }
 
-void PathWithVelocityDisplay::processMessage(const trajectory_tracker_msgs::msg::PathWithVelocity::ConstPtr& msg)
+void PathWithVelocityDisplay::processMessage(const trajectory_tracker_msgs::msg::PathWithVelocity::ConstPtr msg)
 {
   // Calculate index of oldest element in cyclic buffer
   size_t bufferIndex = messages_received_ % buffer_length_property_->getInt();
