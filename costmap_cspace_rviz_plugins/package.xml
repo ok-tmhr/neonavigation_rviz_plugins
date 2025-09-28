@@ -12,7 +12,8 @@
 
   <depend>rclcpp</depend>
   <depend>costmap_cspace_msgs</depend>
-  <depend>rviz2</depend>
+  <depend>rviz_common</depend>
+  <depend>rviz_rendering</depend>
 
   <depend>libqt5-core</depend>
   <depend>libqt5-gui</depend>
