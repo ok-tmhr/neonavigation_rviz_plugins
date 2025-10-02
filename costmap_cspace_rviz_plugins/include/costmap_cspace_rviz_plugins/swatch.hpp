@@ -28,8 +28,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_DEFAULT_PLUGINS__DISPLAYS__MAP__SWATCH_HPP_
-#define RVIZ_DEFAULT_PLUGINS__DISPLAYS__MAP__SWATCH_HPP_
+#ifndef COSTMAP_CSPACE_RVIZ_PLUGINS__DISPLAYS__MAP__SWATCH_HPP_
+#define COSTMAP_CSPACE_RVIZ_PLUGINS__DISPLAYS__MAP__SWATCH_HPP_
 
 #include <cstddef>
 #include <string>
@@ -38,9 +38,10 @@
 #include <OgrePrerequisites.h>
 #include <OgreBlendMode.h>
 
-#include "nav_msgs/msg/occupancy_grid.hpp"
+#include <costmap_cspace_msgs/msg/c_space3_d.hpp>
+#include <costmap_cspace_msgs/msg/c_space3_d_update.hpp>
 
-#include "rviz_default_plugins/visibility_control.hpp"
+#include "visibility_control.hpp"
 
 namespace Ogre
 {
@@ -49,48 +50,48 @@ class SceneNode;
 class ManualObject;
 }
 
-namespace rviz_default_plugins
+namespace costmap_cspace_rviz_plugins
 {
 namespace displays
 {
-class MapDisplay;
+class CSpace3DDisplay;
 
 class Swatch
 {
 public:
-  RVIZ_DEFAULT_PLUGINS_PUBLIC
+  COSTMAP_CSPACE_RVIZ_PLUGINS_PUBLIC
   Swatch(
     Ogre::SceneManager * scene_manager,
     Ogre::SceneNode * parent_scene_node,
     size_t x, size_t y, size_t width, size_t height,
     float resolution, bool draw_under);
 
-  RVIZ_DEFAULT_PLUGINS_PUBLIC
+  COSTMAP_CSPACE_RVIZ_PLUGINS_PUBLIC
   ~Swatch();
 
-  RVIZ_DEFAULT_PLUGINS_PUBLIC
+  COSTMAP_CSPACE_RVIZ_PLUGINS_PUBLIC
   void updateAlpha(
     const Ogre::SceneBlendType & sceneBlending, bool depth_write, float alpha);
 
-  RVIZ_DEFAULT_PLUGINS_PUBLIC
-  void updateData(const nav_msgs::msg::OccupancyGrid & map);
+  COSTMAP_CSPACE_RVIZ_PLUGINS_PUBLIC
+  void updateData(const costmap_cspace_msgs::msg::CSpace3D & map, const costmap_cspace_msgs::msg::CSpace3DUpdate& map_update, const int yaw);
 
-  RVIZ_DEFAULT_PLUGINS_PUBLIC
+  COSTMAP_CSPACE_RVIZ_PLUGINS_PUBLIC
   void setVisible(bool visible);
 
-  RVIZ_DEFAULT_PLUGINS_PUBLIC
+  COSTMAP_CSPACE_RVIZ_PLUGINS_PUBLIC
   void resetOldTexture();
 
-  RVIZ_DEFAULT_PLUGINS_PUBLIC
+  COSTMAP_CSPACE_RVIZ_PLUGINS_PUBLIC
   void setRenderQueueGroup(uint8_t group);
 
-  RVIZ_DEFAULT_PLUGINS_PUBLIC
+  COSTMAP_CSPACE_RVIZ_PLUGINS_PUBLIC
   void setDepthWriteEnabled(bool depth_write_enabled);
 
-  RVIZ_DEFAULT_PLUGINS_PUBLIC
+  COSTMAP_CSPACE_RVIZ_PLUGINS_PUBLIC
   Ogre::Pass * getTechniquePass();
 
-  RVIZ_DEFAULT_PLUGINS_PUBLIC
+  COSTMAP_CSPACE_RVIZ_PLUGINS_PUBLIC
   std::string getTextureName();
 
 private:
@@ -116,6 +117,6 @@ private:
 };
 
 }  // namespace displays
-}  // namespace rviz_default_plugins
+}  // namespace costmap_cspace_rviz_plugins
 
-#endif  // RVIZ_DEFAULT_PLUGINS__DISPLAYS__MAP__SWATCH_HPP_
+#endif  // COSTMAP_CSPACE_RVIZ_PLUGINS__DISPLAYS__MAP__SWATCH_HPP_

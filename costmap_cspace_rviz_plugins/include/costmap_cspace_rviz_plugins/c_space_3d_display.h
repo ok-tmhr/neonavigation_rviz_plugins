@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2012, Willow Garage, Inc.
- * Copyright (c) 2022, the neonavigation authors
+ * Copyright (c) 2018, Bosch Software Innovations GmbH.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,110 +28,91 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-// This file is based on https://bit.ly/3yV4zC2
-
 #ifndef COSTMAP_CSPACE_RVIZ_PLUGINS_C_SPACE_3D_DISPLAY_H
 #define COSTMAP_CSPACE_RVIZ_PLUGINS_C_SPACE_3D_DISPLAY_H
 
-#include <vector>
+#include <memory>
 #include <string>
+#include <vector>
 
 #ifndef Q_MOC_RUN
-#include <boost/thread/thread.hpp>
 
-#include <OGRE/OgreTexture.h>
-#include <OGRE/OgreMaterial.h>
-#include <OGRE/OgreVector3.h>
-#include <OGRE/OgreManualObject.h>
-#include <OGRE/OgreMaterialManager.h>
-#include <OGRE/OgreSceneManager.h>
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreTextureManager.h>
-#include <OGRE/OgreTechnique.h>
-#include <OGRE/OgreSharedPtr.h>
-#endif
+#include <OgreTexture.h>
+#include <OgreMaterial.h>
+#include <OgreVector3.h>
+#include <OgreSharedPtr.h>
 
+#endif  // Q_MOC_RUN
+
+#include "nav_msgs/msg/map_meta_data.hpp"
 #include <costmap_cspace_msgs/msg/c_space3_d.hpp>
 #include <costmap_cspace_msgs/msg/c_space3_d_update.hpp>
-#include <nav_msgs/msg/map_meta_data.hpp>
-#include <rclcpp/time.hpp>
-#include <rviz_common/display.hpp>
-#include <rviz_common/ros_integration/ros_node_abstraction_iface.hpp>
+#include "rclcpp/time.hpp"
+#include "rclcpp/qos.hpp"
+
+#include "rviz_common/message_filter_display.hpp"
+
+#include "costmap_cspace_rviz_plugins/swatch.hpp"
+#include "visibility_control.hpp"
 
 namespace Ogre
 {
 class ManualObject;
-}  // namespace Ogre
+}
 
-namespace rviz_common::properties
+namespace rviz_common
 {
+namespace properties
+{
+
 class EnumProperty;
 class FloatProperty;
 class IntProperty;
 class Property;
 class QuaternionProperty;
-class RosTopicProperty;
 class VectorProperty;
+class RosTopicProperty;
 class BoolProperty;
-}  // namespace rviz
+
+}  // namespace properties
+}  // namespace rviz_common
 
 namespace costmap_cspace_rviz_plugins
 {
-class CSpace3DDisplay;
+namespace displays
+{
 class AlphaSetter;
 
-class Swatch
-{
-  friend class CSpace3DDisplay;
-
-public:
-  Swatch(CSpace3DDisplay* parent, unsigned int x, unsigned int y, unsigned int width, unsigned int height,
-         float resolution);
-  ~Swatch();
-  void updateAlpha(const Ogre::SceneBlendType sceneBlending, bool depthWrite,
-                   costmap_cspace_rviz_plugins::AlphaSetter* alpha_setter);
-  void updateData(const int yaw);
-
-protected:
-  CSpace3DDisplay* parent_;
-  Ogre::ManualObject* manual_object_;
-  Ogre::TexturePtr texture_;
-  Ogre::MaterialPtr material_;
-  Ogre::SceneNode* scene_node_;
-  unsigned int x_, y_, width_, height_;
-};
 
 /**
- * \class MapDisplay
- * \brief Displays a map along the XY plane.
+ * \class CSpace3DDisplay
+ * \brief Displays a costmap along the XY plane.
  */
-class CSpace3DDisplay : public rviz_common::Display
+class COSTMAP_CSPACE_RVIZ_PLUGINS_PUBLIC CSpace3DDisplay : public
+  rviz_common::MessageFilterDisplay<costmap_cspace_msgs::msg::CSpace3D>
 {
-  friend class Swatch;
   Q_OBJECT
+
 public:
+  // TODO(botteroa-si): Constructor for testing, remove once ros_nodes can be mocked and call
+  // initialize() instead
+  explicit CSpace3DDisplay(rviz_common::DisplayContext * context);
   CSpace3DDisplay();
   ~CSpace3DDisplay() override;
 
-  // Overrides from Display
   void onInitialize() override;
   void fixedFrameChanged() override;
   void reset() override;
 
-  float getResolution()
-  {
-    return resolution_;
-  }
-  int getWidth()
-  {
-    return width_;
-  }
-  int getHeight()
-  {
-    return height_;
-  }
+  float getResolution() {return resolution_;}
+  size_t getWidth() {return width_;}
+  size_t getHeight() {return height_;}
 
-  void setTopic(const QString& topic, const QString& datatype) override;
+  /** @brief Copy msg into current_map_ and call showMap(). */
+  void processMessage(costmap_cspace_msgs::msg::CSpace3D::ConstSharedPtr msg) override;
+
+public Q_SLOTS:
+  void showMap();
 
 Q_SIGNALS:
   /** @brief Emitted when a new map is received*/
@@ -139,66 +120,83 @@ Q_SIGNALS:
 
 protected Q_SLOTS:
   void updateAlpha();
-  void updateTopic();
-  void updateDrawUnder();
+  void updateDrawUnder() const;
   void updatePalette();
   void updateYaw();
   /** @brief Show current_map_ in the scene. */
-  void showMap();
   void transformMap();
+  void updateMapUpdateTopic();
 
 protected:
-  // overrides from Display
-  void onEnable() override;
-  void onDisable() override;
-
-  virtual void subscribe();
-  virtual void unsubscribe();
+  void updateTopic() override;
   void update(float wall_dt, float ros_dt) override;
 
-  /** @brief Copy msg into current_map_ and call showMap(). */
-  void incomingMap(const costmap_cspace_msgs::msg::CSpace3D::ConstPtr& msg);
+  void subscribe() override;
+  void unsubscribe() override;
+
+  void onEnable() override;
 
   /** @brief Copy update's data into current_map_ and call showMap(). */
-  void incomingUpdate(const costmap_cspace_msgs::msg::CSpace3DUpdate::ConstPtr& update);
-  void clear();
-  void createSwatches();
+  void incomingUpdate(costmap_cspace_msgs::msg::CSpace3DUpdate::ConstSharedPtr update);
 
-  std::vector<Swatch*> swatches_;
+  bool updateDataOutOfBounds(costmap_cspace_msgs::msg::CSpace3DUpdate::ConstSharedPtr update) const;
+  void updateMapDataInMemory(costmap_cspace_msgs::msg::CSpace3DUpdate::ConstSharedPtr update);
+
+  void clear();
+
+  void subscribeToUpdateTopic();
+  void unsubscribeToUpdateTopic();
+
+  void showValidMap();
+  void resetSwatchesIfNecessary(size_t width, size_t height, float resolution);
+  void createSwatches();
+  void doubleSwatchNumber(
+    size_t & swatch_width, size_t & swatch_height,
+    int & number_swatches) const;
+  void tryCreateSwatches(
+    size_t width,
+    size_t height,
+    float resolution,
+    size_t swatch_width,
+    size_t swatch_height,
+    int number_swatches);
+  size_t getEffectiveDimension(size_t map_dimension, size_t swatch_dimension, size_t position);
+  void updateSwatches() const;
+
+  std::vector<std::shared_ptr<Swatch>> swatches_;
   std::vector<Ogre::TexturePtr> palette_textures_;
   std::vector<bool> color_scheme_transparency_;
   bool loaded_;
 
-  std::string topic_;
   float resolution_;
-  int width_;
-  int height_;
-  int angle_;
+  size_t width_;
+  size_t height_;
   std::string frame_;
   costmap_cspace_msgs::msg::CSpace3D current_map_;
   costmap_cspace_msgs::msg::CSpace3DUpdate current_update_;
 
-  rviz_common::ros_integration::RosNodeAbstractionIface::WeakPtr rviz_ros_node_;
-  rclcpp::Subscription<costmap_cspace_msgs::msg::CSpace3D>::SharedPtr map_sub_;
-  rclcpp::Subscription<costmap_cspace_msgs::msg::CSpace3DUpdate>::SharedPtr update_sub_;
+  rclcpp::Subscription<costmap_cspace_msgs::msg::CSpace3DUpdate>::SharedPtr update_subscription_;
+  rclcpp::QoS update_profile_;
+  rclcpp::Time subscription_start_time_;
 
-  rviz_common::properties::RosTopicProperty* topic_property_;
-  rviz_common::properties::RosTopicProperty* topic_update_property_;
-  rviz_common::properties::FloatProperty* resolution_property_;
+  rviz_common::properties::RosTopicProperty * update_topic_property_;
+  rviz_common::properties::QosProfileProperty * update_profile_property_;
+  rviz_common::properties::FloatProperty * resolution_property_;
   rviz_common::properties::FloatProperty* angular_resolution_property_;
-  rviz_common::properties::IntProperty* width_property_;
-  rviz_common::properties::IntProperty* height_property_;
-  rviz_common::properties::VectorProperty* position_property_;
-  rviz_common::properties::QuaternionProperty* orientation_property_;
-  rviz_common::properties::FloatProperty* alpha_property_;
-  rviz_common::properties::Property* draw_under_property_;
-  rviz_common::properties::EnumProperty* color_scheme_property_;
+  rviz_common::properties::IntProperty * width_property_;
+  rviz_common::properties::IntProperty * height_property_;
+  rviz_common::properties::VectorProperty * position_property_;
+  rviz_common::properties::QuaternionProperty * orientation_property_;
+  rviz_common::properties::FloatProperty * alpha_property_;
+  rviz_common::properties::Property * draw_under_property_;
+  rviz_common::properties::EnumProperty * color_scheme_property_;
   rviz_common::properties::IntProperty* yaw_property_;
+  rviz_common::properties::BoolProperty * transform_timestamp_property_;
 
-  rviz_common::properties::BoolProperty* unreliable_property_;
-  rviz_common::properties::BoolProperty* transform_timestamp_property_;
+  uint32_t update_messages_received_;
 };
 
+}  // namespace displays
 }  // namespace costmap_cspace_rviz_plugins
 
 #endif  // COSTMAP_CSPACE_RVIZ_PLUGINS_C_SPACE_3D_DISPLAY_H

@@ -29,6 +29,8 @@ add_definitions(-DQT_NO_KEYWORDS)
 
 add_library(${PROJECT_NAME}
   src/c_space_3d_display.cpp
+  src/swatch.cpp
+  src/palette_builder.cpp
   ${MOC_FILES}
 )
 ament_target_dependencies(${PROJECT_NAME} ${COLCON_DEPENDS})
@@ -38,7 +40,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   $<INSTALL_INTERFACE:include>
 )
 
-if(CATKIN_ENABLE_TESTING)
+if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()

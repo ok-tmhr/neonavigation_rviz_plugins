@@ -27,13 +27,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "rviz_default_plugins/displays/map/palette_builder.hpp"
+#include "costmap_cspace_rviz_plugins/palette_builder.hpp"
 
 #include <cstring>
 #include <memory>
 #include <vector>
 
-namespace rviz_default_plugins
+namespace costmap_cspace_rviz_plugins
 {
 namespace displays
 {
@@ -102,11 +102,10 @@ std::vector<unsigned char> makeCostmapPalette()
 {
   auto palette_builder = std::make_shared<PaletteBuilder>();
   palette_builder->setColorForValue(0, 0, 0, 0, 0);
-  for (unsigned char i = 1; i <= 98; i++) {
+  for (unsigned char i = 1; i <= 99; i++) {
     unsigned char v = (255 * i) / 100;
     palette_builder->setColorForValue(i, v, 0, 255 - v, 255);
   }
-  palette_builder->setColorForValue(99, 0, 255, 255, 255);  // obstacle values in cyan
   palette_builder->setColorForValue(100, 255, 0, 255, 255);  // lethal obstacle values in purple
 
   return palette_builder->setColorForIllegalPositiveValues(0, 255, 0)
@@ -125,4 +124,4 @@ std::vector<unsigned char> makeRawPalette()
 }
 
 }  // namespace displays
-}  // namespace rviz_default_plugins
+}  // namespace costmap_cspace_rviz_plugins

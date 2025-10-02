@@ -45,7 +45,7 @@
 
 #include "rviz_rendering/custom_parameter_indices.hpp"
 
-namespace rviz_default_plugins
+namespace costmap_cspace_rviz_plugins
 {
 namespace displays
 {
@@ -112,24 +112,45 @@ void Swatch::updateAlpha(
   }
 }
 
-void Swatch::updateData(const nav_msgs::msg::OccupancyGrid & map)
+void Swatch::updateData(const costmap_cspace_msgs::msg::CSpace3D & map, const costmap_cspace_msgs::msg::CSpace3DUpdate& map_update, const int yaw)
 {
   size_t pixels_size = width_ * height_;
   size_t map_size = map.data.size();
   size_t map_width = map.info.width;
+  size_t map_height = map.info.height;
 
   auto pixels = std::vector<unsigned char>(pixels_size, 255);
 
-  auto pixel_data = pixels.begin();
-  for (size_t map_row = y_; map_row < y_ + height_; map_row++) {
-    size_t pixel_index = map_row * map_width + x_;
-    size_t pixels_to_copy = std::min(width_, map_size - pixel_index);
-
-    auto row_start = map.data.begin() + pixel_index;
-    std::copy(row_start, row_start + pixels_to_copy, pixel_data);
-    pixel_data += pixels_to_copy;
-    if (pixel_index + pixels_to_copy >= map_size) {
+  unsigned char* ptr = pixels.data();
+  const int shift_map = yaw * map_width * map_height;
+  unsigned int fw = map_width;
+  for (unsigned int yy = y_; yy < y_ + height_; yy++)
+  {
+    int index = yy * fw + x_;
+    int pixels_to_copy = std::min(width_, map_size - index);
+    memcpy(ptr, &map.data[shift_map + index], pixels_to_copy);
+    ptr += pixels_to_copy;
+    if (index + pixels_to_copy >= pixels_size)
       break;
+  }
+
+  const size_t update_y_min = map_update.y;
+  const size_t update_y_max = map_update.y + map_update.height;
+  const size_t update_x_min = map_update.x;
+  const size_t update_x_max = map_update.x + map_update.width;
+  const size_t shift_update = map_update.width * map_update.height * yaw;
+  const int8_t* const update_buf = map_update.data.data() + shift_update;
+  if ((update_x_min < x_ + width_) && (x_ < update_x_max) && (update_y_min < y_ + height_) && (y_ < update_y_max))
+  {
+    for (unsigned int yy = std::max(y_, update_y_min); yy < std::min(y_ + height_, update_y_max); ++yy)
+    {
+      unsigned int xx = std::max(x_, update_x_min);
+      unsigned char* to = pixels.data() + (yy - y_) * width_ + xx - x_;
+      const unsigned char* from = reinterpret_cast<const unsigned char*>(update_buf + (yy - update_y_min) * map_update.width + (xx - update_x_min));
+      for (; xx < std::min(x_ + width_, update_x_max); ++xx, ++to, ++from)
+      {
+        *to = std::max(*to, *from);
+      }
     }
   }
 
@@ -189,7 +210,7 @@ void Swatch::resetTexture(Ogre::DataStreamPtr & pixel_stream)
   old_texture_ = texture_;
 
   texture_ = Ogre::TextureManager::getSingleton().loadRawData(
-    "MapTexture" + std::to_string(texture_count_++),
+    "CSpace3DMapTexture" + std::to_string(texture_count_++),
     "rviz_rendering",
     pixel_stream,
     static_cast<uint16_t>(width_), static_cast<uint16_t>(height_),
@@ -199,7 +220,7 @@ void Swatch::resetTexture(Ogre::DataStreamPtr & pixel_stream)
 void Swatch::setupMaterial()
 {
   material_ = Ogre::MaterialManager::getSingleton().getByName("rviz/Indexed8BitImage");
-  material_ = material_->clone("MapMaterial" + std::to_string(material_count_++));
+  material_ = material_->clone("CSpaceMapMaterial" + std::to_string(material_count_++));
 
   material_->setReceiveShadows(false);
   material_->getTechnique(0)->setLightingEnabled(false);
@@ -210,10 +231,10 @@ void Swatch::setupMaterial()
 
 void Swatch::setupSceneNodeWithManualObject()
 {
-  manual_object_ = scene_manager_->createManualObject("MapObject" + std::to_string(map_count_++));
+  manual_object_ = scene_manager_->createManualObject("CSpaceMapObject" + std::to_string(map_count_++));
 
   scene_node_ = parent_scene_node_->createChildSceneNode(
-    "NodeObject" + std::to_string(node_count_++));
+    "CSpaceNodeObject" + std::to_string(node_count_++));
   scene_node_->attachObject(manual_object_);
 
   setupSquareManualObject();
@@ -245,4 +266,4 @@ void Swatch::addPointWithPlaneCoordinates(float x, float y)
 }
 
 }  // namespace displays
-}  // namespace rviz_default_plugins
+}  // namespace costmap_cspace_rviz_plugins

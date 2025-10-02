@@ -27,50 +27,50 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_DEFAULT_PLUGINS__DISPLAYS__MAP__PALETTE_BUILDER_HPP_
-#define RVIZ_DEFAULT_PLUGINS__DISPLAYS__MAP__PALETTE_BUILDER_HPP_
+#ifndef COSTMAP_CSPACE_RVIZ_PLUGINS__DISPLAYS__MAP__PALETTE_BUILDER_HPP_
+#define COSTMAP_CSPACE_RVIZ_PLUGINS__DISPLAYS__MAP__PALETTE_BUILDER_HPP_
 
 #include <memory>
 #include <vector>
 
-#include "rviz_default_plugins/visibility_control.hpp"
+#include "visibility_control.hpp"
 
-namespace rviz_default_plugins
+namespace costmap_cspace_rviz_plugins
 {
 namespace displays
 {
 
-RVIZ_DEFAULT_PLUGINS_PUBLIC std::vector<unsigned char> makeRawPalette();
-RVIZ_DEFAULT_PLUGINS_PUBLIC std::vector<unsigned char> makeMapPalette();
-RVIZ_DEFAULT_PLUGINS_PUBLIC std::vector<unsigned char> makeCostmapPalette();
+COSTMAP_CSPACE_RVIZ_PLUGINS_PUBLIC std::vector<unsigned char> makeRawPalette();
+COSTMAP_CSPACE_RVIZ_PLUGINS_PUBLIC std::vector<unsigned char> makeMapPalette();
+COSTMAP_CSPACE_RVIZ_PLUGINS_PUBLIC std::vector<unsigned char> makeCostmapPalette();
 
 class PaletteBuilder : public
   std::enable_shared_from_this<PaletteBuilder>
 {
 public:
-  RVIZ_DEFAULT_PLUGINS_PUBLIC
+  COSTMAP_CSPACE_RVIZ_PLUGINS_PUBLIC
   PaletteBuilder();
 
-  RVIZ_DEFAULT_PLUGINS_PUBLIC
+  COSTMAP_CSPACE_RVIZ_PLUGINS_PUBLIC
   virtual ~PaletteBuilder() = default;
 
-  RVIZ_DEFAULT_PLUGINS_PUBLIC
+  COSTMAP_CSPACE_RVIZ_PLUGINS_PUBLIC
   std::shared_ptr<PaletteBuilder> setColorForIllegalPositiveValues(
     unsigned char r, unsigned char g, unsigned char b);
 
-  RVIZ_DEFAULT_PLUGINS_PUBLIC
+  COSTMAP_CSPACE_RVIZ_PLUGINS_PUBLIC
   std::shared_ptr<PaletteBuilder> setRedYellowColorsForIllegalNegativeValues();
 
-  RVIZ_DEFAULT_PLUGINS_PUBLIC
+  COSTMAP_CSPACE_RVIZ_PLUGINS_PUBLIC
   std::shared_ptr<PaletteBuilder> setColorForLegalNegativeValueMinusOne(
     unsigned char r, unsigned char g, unsigned char b);
 
-  RVIZ_DEFAULT_PLUGINS_PUBLIC
+  COSTMAP_CSPACE_RVIZ_PLUGINS_PUBLIC
   std::shared_ptr<PaletteBuilder> setColorForValue(
     unsigned char palette_position,
     unsigned char r, unsigned char g, unsigned char b, unsigned char alpha);
 
-  RVIZ_DEFAULT_PLUGINS_PUBLIC
+  COSTMAP_CSPACE_RVIZ_PLUGINS_PUBLIC
   std::vector<unsigned char> buildPalette();
 
 private:
@@ -78,6 +78,6 @@ private:
 };
 
 }  // namespace displays
-}  // namespace rviz_default_plugins
+}  // namespace costmap_cspace_rviz_plugins
 
-#endif  // RVIZ_DEFAULT_PLUGINS__DISPLAYS__MAP__PALETTE_BUILDER_HPP_
+#endif  // COSTMAP_CSPACE_RVIZ_PLUGINS__DISPLAYS__MAP__PALETTE_BUILDER_HPP_
