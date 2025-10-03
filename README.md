@@ -8,6 +8,6 @@ Rviz plugins for neonavigation_msgs
 The source codes in this package are available under BSD license.
 All icons and graphics in this package are in the Public Domain.
 
-This meta-package contains derived codes and icons from [rviz](https://github.com/ros-visualization/rviz) package.
+This meta-package contains derived codes and icons from [rviz](https://github.com/ros-visualization/rviz) and [rviz2](https://github.com/ros2/rviz) package.
 
 See [LICENSE](LICENSE) for detail.

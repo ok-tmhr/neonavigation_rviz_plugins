@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2018, Bosch Software Innovations GmbH.
+ * Copyright (c) 2025, Tomohiro Oku
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
