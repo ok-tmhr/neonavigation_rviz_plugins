@@ -77,7 +77,7 @@ protected:
   virtual void onInitialize();
 
   /** @brief Overridden from MessageFilterDisplay. */
-  void processMessage(const trajectory_tracker_msgs::msg::PathWithVelocity::ConstPtr msg);
+  void processMessage(const trajectory_tracker_msgs::msg::PathWithVelocity::ConstSharedPtr msg);
 
 private Q_SLOTS:
   void updateBufferLength();

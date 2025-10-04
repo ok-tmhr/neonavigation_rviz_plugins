@@ -414,7 +414,7 @@ void PathWithVelocityDisplay::updateBufferLength()
   arrow_chain_.resize(buffer_length);
 }
 
-void PathWithVelocityDisplay::processMessage(const trajectory_tracker_msgs::msg::PathWithVelocity::ConstPtr msg)
+void PathWithVelocityDisplay::processMessage(const trajectory_tracker_msgs::msg::PathWithVelocity::ConstSharedPtr msg)
 {
   // Calculate index of oldest element in cyclic buffer
   size_t bufferIndex = messages_received_ % buffer_length_property_->getInt();
@@ -524,11 +524,11 @@ void PathWithVelocityDisplay::processMessage(const trajectory_tracker_msgs::msg:
         const geometry_msgs::msg::Point& pos = msg->poses[i].pose.position;
         Ogre::Vector3 xpos = transform * Ogre::Vector3(pos.x, pos.y, pos.z);
         axes_vect[i]->setPosition(xpos);
-        Ogre::Quaternion orientation(msg->poses[i].pose.orientation.w,
+        Ogre::Quaternion q(msg->poses[i].pose.orientation.w,
                                      msg->poses[i].pose.orientation.x,
                                      msg->poses[i].pose.orientation.y,
                                      msg->poses[i].pose.orientation.z);
-        axes_vect[i]->setOrientation(orientation);
+        axes_vect[i]->setOrientation(q);
       }
       break;
 
@@ -539,21 +539,21 @@ void PathWithVelocityDisplay::processMessage(const trajectory_tracker_msgs::msg:
         const geometry_msgs::msg::Point& pos = msg->poses[i].pose.position;
         Ogre::Vector3 xpos = transform * Ogre::Vector3(pos.x, pos.y, pos.z);
 
-        QColor color = pose_arrow_color_property_->getColor();
-        arrow_vect[i]->setColor(color.redF(), color.greenF(), color.blueF(), 1.0f);
+        QColor arrow_color = pose_arrow_color_property_->getColor();
+        arrow_vect[i]->setColor(arrow_color.redF(), arrow_color.greenF(), arrow_color.blueF(), 1.0f);
 
         arrow_vect[i]->set(pose_arrow_shaft_length_property_->getFloat(),
                            pose_arrow_shaft_diameter_property_->getFloat(),
                            pose_arrow_head_length_property_->getFloat(),
                            pose_arrow_head_diameter_property_->getFloat());
         arrow_vect[i]->setPosition(xpos);
-        Ogre::Quaternion orientation(msg->poses[i].pose.orientation.w,
+        Ogre::Quaternion q(msg->poses[i].pose.orientation.w,
                                      msg->poses[i].pose.orientation.x,
                                      msg->poses[i].pose.orientation.y,
                                      msg->poses[i].pose.orientation.z);
 
         Ogre::Vector3 dir(1, 0, 0);
-        dir = orientation * dir;
+        dir = q * dir;
         arrow_vect[i]->setDirection(dir);
       }
       break;
