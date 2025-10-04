@@ -131,7 +131,7 @@ void Swatch::updateData(const costmap_cspace_msgs::msg::CSpace3D & map, const co
     int pixels_to_copy = std::min(width_, map_size - index);
     memcpy(ptr, &map.data[shift_map + index], pixels_to_copy);
     ptr += pixels_to_copy;
-    if (index + pixels_to_copy >= pixels_size)
+    if (static_cast<size_t>(index + pixels_to_copy) >= pixels_size)
       break;
   }
 

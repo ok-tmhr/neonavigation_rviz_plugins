@@ -382,9 +382,7 @@ void CSpace3DDisplay::incomingUpdate(const costmap_cspace_msgs::msg::CSpace3DUpd
 bool CSpace3DDisplay::updateDataOutOfBounds(
   const costmap_cspace_msgs::msg::CSpace3DUpdate::ConstSharedPtr update) const
 {
-  return update->x < 0 ||
-         update->y < 0 ||
-         current_map_.info.width < update->x + update->width ||
+  return current_map_.info.width < update->x + update->width ||
          current_map_.info.height < update->y + update->height;
 }
 

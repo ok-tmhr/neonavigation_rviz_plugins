@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.14.4)
 project(costmap_cspace_rviz_plugins)
 
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+endif()
+
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic -Werror -Wshadow)
 endif()
@@ -19,8 +24,6 @@ foreach(COLCON_DEPEND ${COLCON_DEPENDS})
   find_package(${COLCON_DEPEND} REQUIRED)
 endforeach()
 
-set(CMAKE_CXX_STANDARD 17)
-add_compile_options(-Wall)
 
 set(CMAKE_AUTOMOC ON)
 
